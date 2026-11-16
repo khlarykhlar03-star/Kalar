@@ -16,6 +16,10 @@ jobs:
           java-version: '17'
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v3
+      - name: Fix JVM target to 17
+        run: |
+          find app_src -name "*.kts" -o -name "*.gradle" | xargs sed -i 's/VERSION_1_8/VERSION_17/g; s/jvmTarget = "1.8"/jvmTarget = "17"/g; s/jvmTarget = .1.8./jvmTarget = "17"/g; s/JavaVersion.VERSION_1_8/JavaVersion.VERSION_17/g'
+          grep -r "jvmTarget\|JavaVersion" app_src --include="*.kts" --include="*.gradle" | head -n 50
       - name: Build debug APK
         run: |
           ROOT=$(find app_src -name "settings.gradle*" -print -quit | xargs dirname)
