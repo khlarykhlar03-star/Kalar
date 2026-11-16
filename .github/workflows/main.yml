@@ -23,6 +23,9 @@ jobs:
           ROOT=$(find app_src -name "settings.gradle*" -print -quit | xargs dirname)
           echo "ROOT=$ROOT"
           cd "$ROOT"
+          echo "kotlin.jvm.target.validation.mode=WARNING" >> gradle.properties
+          echo "kotlin.jvm.target=1.8" >> gradle.properties
+          cat gradle.properties
           gradle assembleDebug -x validateSigningDebug --stacktrace
       - name: Save APK
         uses: actions/upload-artifact@v4
