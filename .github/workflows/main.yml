@@ -18,17 +18,20 @@ jobs:
         uses: gradle/actions/setup-gradle@v3
         with:
           gradle-version: 8.9
-      - name: Build debug APK
+      - name: Fix Java to 17
         run: |
-          ROOT=$(find app_src -name "settings.gradle*" -print -quit | xargs dirname)
-          echo "ROOT=$ROOT"
-          cd "$ROOT"
-          echo "kotlin.jvm.target.validation.mode=WARNING" >> gradle.properties
-          echo "kotlin.jvm.target=1.8" >> gradle.properties
-          cat gradle.properties
-          gradle assembleDebug -x validateSigningDebug --stacktrace
-      - name: Save APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: app-debug
-          path: '**/app/build/outputs/apk/debug/app-debug.apk'
+          python3 -c "
+          import pathlib
+          for p in list(pathlib.Path('app_src').rglob('*.gradle')) + list(pathlib.Path('app_src').rglob('*.kts')):
+              t = p.read_text(errors='ignore')
+              t = t.replace('VERSION_1_8', 'VERSION_17')
+              t = t.replace(chr(39)+'1.8'+chr(39), chr(39)+'17'+chr(39))
+              t = t.replace(chr(34)+'1.8'+chr(34), chr(34)+'17'+chr(34))
+              t = t.replace('JVM_1_8', 'JVM_17')
+              t = t.replace('JvmTarget.JVM_1_8', 'JvmTarget.JVM_17')
+              p.write_text(t)
+              print(p)
+          "
+          grep -r "VERSION_17\|jvmTarget" app_src --include="*.gradle" --include="*.kts" | head -n 50
+      - name: Build debug APK
+       
